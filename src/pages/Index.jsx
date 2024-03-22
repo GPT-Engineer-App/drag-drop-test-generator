@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Box, Heading, Text, Image, Flex, Table, Tbody, Tr, Td, Divider } from "@chakra-ui/react";
+import { Box, Heading, Text, Image, Flex, Table, Tbody, Tr, Td, Divider, Button } from "@chakra-ui/react";
 import { FaGripVertical } from "react-icons/fa";
 
 const Index = () => {
@@ -142,7 +142,7 @@ const Index = () => {
           </Heading>
           <Flex mb={4}>
             {question.options.map((option) => (
-              <Box key={option._id} mr={4}>
+              <Box key={option._id} mr={4} draggable onDragStart={(e) => e.dataTransfer.setData("optionId", option._id)}>
                 {option.image && <Image src={option.image} alt="Option" w={100} h={100} />}
                 {option.text && <Text>{option.text}</Text>}
               </Box>
@@ -156,9 +156,17 @@ const Index = () => {
                     {statement.text && <Text>{statement.text}</Text>}
                     {statement.image && <Image src={statement.image} alt="Statement" w={100} h={100} />}
                   </Td>
-                  <Td onDragOver={(e) => e.preventDefault()} onDrop={() => handleDrop(question._id, statement._id, answers[question._id]?.[statement._id])}>
+                  <Td
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => {
+                      const optionId = e.dataTransfer.getData("optionId");
+                      handleDrop(question._id, statement._id, optionId);
+                    }}
+                  >
                     {answers[question._id]?.[statement._id] ? (
-                      <Box>{question.options.find((option) => option._id === answers[question._id][statement._id]).text || <Image src={question.options.find((option) => option._id === answers[question._id][statement._id]).image} alt="Answer" w={100} h={100} />}</Box>
+                      <Box draggable onDragStart={(e) => e.dataTransfer.setData("optionId", answers[question._id][statement._id])}>
+                        {question.options.find((option) => option._id === answers[question._id][statement._id]).text || <Image src={question.options.find((option) => option._id === answers[question._id][statement._id]).image} alt="Answer" w={100} h={100} />}
+                      </Box>
                     ) : (
                       <Box border="2px" borderColor="gray.200" borderStyle="dashed" w={100} h={100} display="flex" alignItems="center" justifyContent="center">
                         <FaGripVertical size={20} color="gray.500" />
@@ -172,6 +180,65 @@ const Index = () => {
           <Divider my={8} />
         </Box>
       ))}
+      <Button colorScheme="blue" onClick={handleSubmit}>
+        Submit Answers
+      </Button>
+    </Box>
+  );
+const handleSubmit = () => {
+    console.log(answers);
+  };
+
+  return (
+    <Box p={4}>
+      {questions.map((question) => (
+        <Box key={question._id} mb={8}>
+          <Heading size="md" mb={4}>
+            <div dangerouslySetInnerHTML={{ __html: question.description }} />
+          </Heading>
+          <Flex mb={4}>
+            {question.options.map((option) => (
+              <Box key={option._id} mr={4} draggable onDragStart={(e) => e.dataTransfer.setData("optionId", option._id)}>
+                {option.image && <Image src={option.image} alt="Option" w={100} h={100} />}
+                {option.text && <Text>{option.text}</Text>}
+              </Box>
+            ))}
+          </Flex>
+          <Table>
+            <Tbody>
+              {question.statement.map((statement) => (
+                <Tr key={statement._id}>
+                  <Td>
+                    {statement.text && <Text>{statement.text}</Text>}
+                    {statement.image && <Image src={statement.image} alt="Statement" w={100} h={100} />}
+                  </Td>
+                  <Td
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => {
+                      const optionId = e.dataTransfer.getData("optionId");
+                      handleDrop(question._id, statement._id, optionId);
+                    }}
+                  >
+                    {answers[question._id]?.[statement._id] ? (
+                      <Box draggable onDragStart={(e) => e.dataTransfer.setData("optionId", answers[question._id][statement._id])}>
+                        {question.options.find((option) => option._id === answers[question._id][statement._id]).text || <Image src={question.options.find((option) => option._id === answers[question._id][statement._id]).image} alt="Answer" w={100} h={100} />}
+                      </Box>
+                    ) : (
+                      <Box border="2px" borderColor="gray.200" borderStyle="dashed" w={100} h={100} display="flex" alignItems="center" justifyContent="center">
+                        <FaGripVertical size={20} color="gray.500" />
+                      </Box>
+                    )}
+                  </Td>
+                </Tr>
+              ))}
+            </Tbody>
+          </Table>
+          <Divider my={8} />
+        </Box>
+      ))}
+      <Button colorScheme="blue" onClick={handleSubmit}>
+        Submit Answers
+      </Button>
     </Box>
   );
 };
